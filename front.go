@@ -17,17 +17,56 @@
  */
 package main
 
-import "syscall/js"
+import (
+	"strings"
+	"syscall/js"
+)
+
+const document = "document"
+const getElementById = "getElementById"
+const innerText = "innerText"
+const onclick = "onclick"
+const submit = "submit"
+const value = "value"
+
+func alert(message string) {
+	jsAlert := js.Global().Get("alert")
+	if jsAlert.Truthy() {
+		jsAlert.Invoke(message)
+	}
+}
 
 func loginRegisterAction(this js.Value, args []js.Value) any {
-	jsDoc := js.Global().Get("document")
+	jsDoc := js.Global().Get(document)
 	if jsDoc.Truthy() {
-		loginForm := jsDoc.Call("getElementById", "loginForm")
+		loginForm := jsDoc.Call(getElementById, "loginForm")
 		if loginForm.Truthy() {
-			loginRegisterField := jsDoc.Call("getElementById", "loginRegisterField")
+			loginRegisterField := jsDoc.Call(getElementById, "loginRegisterField")
 			if loginRegisterField.Truthy() {
-				loginRegisterField.Set("value", "true")
-				loginForm.Call("submit")
+				loginRegisterField.Set(value, "true")
+				loginForm.Call(submit)
+			}
+		}
+	}
+	return nil
+}
+
+func saveRoleAction(this js.Value, args []js.Value) any {
+	jsDoc := js.Global().Get(document)
+	if jsDoc.Truthy() {
+		editRoleForm := jsDoc.Call(getElementById, "editRoleForm")
+		if editRoleForm.Truthy() {
+			editRoleNameField := jsDoc.Call(getElementById, "loginRegisterField")
+			if editRoleNameField.Truthy() {
+				roleName := editRoleNameField.Get(value).String()
+				if strings.EqualFold(roleName, "new") {
+					errorMessageSpan := jsDoc.Call(getElementById, "errorBadRoleNameMessage")
+					if errorMessageSpan.Truthy() {
+						alert(errorMessageSpan.Get(innerText).String())
+					}
+				} else {
+					editRoleForm.Call(submit)
+				}
 			}
 		}
 	}
@@ -35,11 +74,16 @@ func loginRegisterAction(this js.Value, args []js.Value) any {
 }
 
 func main() {
-	jsDoc := js.Global().Get("document")
+	jsDoc := js.Global().Get(document)
 	if jsDoc.Truthy() {
-		loginRegisterButton := jsDoc.Call("getElementById", "loginRegisterButton")
+		loginRegisterButton := jsDoc.Call(getElementById, "loginRegisterButton")
 		if loginRegisterButton.Truthy() {
-			loginRegisterButton.Set("onclick", js.FuncOf(loginRegisterAction))
+			loginRegisterButton.Set(onclick, js.FuncOf(loginRegisterAction))
+		}
+
+		saveRoleButton := jsDoc.Call(getElementById, "saveRoleButton")
+		if saveRoleButton.Truthy() {
+			saveRoleButton.Set(onclick, js.FuncOf(loginRegisterAction))
 		}
 	}
 
