@@ -83,7 +83,7 @@ func main() {
 
 		saveRoleButton := jsDoc.Call(getElementById, "saveRoleButton")
 		if saveRoleButton.Truthy() {
-			saveRoleButton.Set(onclick, js.FuncOf(loginRegisterAction))
+			saveRoleButton.Set(onclick, js.FuncOf(saveRoleAction))
 		}
 	}
 
