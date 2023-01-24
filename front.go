@@ -38,15 +38,17 @@ func alert(message string) {
 
 func loginRegisterAction(this js.Value, args []js.Value) any {
 	jsDoc := js.Global().Get(document)
-	if jsDoc.Truthy() {
-		loginForm := jsDoc.Call(getElementById, "loginForm")
-		if loginForm.Truthy() {
-			loginRegisterField := jsDoc.Call(getElementById, "loginRegisterField")
-			if loginRegisterField.Truthy() {
-				loginRegisterField.Set(value, "true")
-				loginForm.Call(submit)
-			}
-		}
+	if !jsDoc.Truthy() {
+		return nil
+	}
+	loginForm := jsDoc.Call(getElementById, "loginForm")
+	if !loginForm.Truthy() {
+		return nil
+	}
+	loginRegisterField := jsDoc.Call(getElementById, "loginRegisterField")
+	if loginRegisterField.Truthy() {
+		loginRegisterField.Set(value, "true")
+		loginForm.Call(submit)
 	}
 	return nil
 }
@@ -61,7 +63,7 @@ func saveRoleAction(this js.Value, args []js.Value) any {
 		return nil
 	}
 	editRoleNameField := jsDoc.Call(getElementById, "loginRegisterField")
-	if editRoleNameField.Truthy() {
+	if !editRoleNameField.Truthy() {
 		return nil
 	}
 	roleName := editRoleNameField.Get(value).String()
@@ -78,16 +80,18 @@ func saveRoleAction(this js.Value, args []js.Value) any {
 
 func main() {
 	jsDoc := js.Global().Get(document)
-	if jsDoc.Truthy() {
-		loginRegisterButton := jsDoc.Call(getElementById, "loginRegisterButton")
-		if loginRegisterButton.Truthy() {
-			loginRegisterButton.Set(onclick, js.FuncOf(loginRegisterAction))
-		}
+	if !jsDoc.Truthy() {
+		return
+	}
 
-		saveRoleButton := jsDoc.Call(getElementById, "saveRoleButton")
-		if saveRoleButton.Truthy() {
-			saveRoleButton.Set(onclick, js.FuncOf(saveRoleAction))
-		}
+	loginRegisterButton := jsDoc.Call(getElementById, "loginRegisterButton")
+	if loginRegisterButton.Truthy() {
+		loginRegisterButton.Set(onclick, js.FuncOf(loginRegisterAction))
+	}
+
+	saveRoleButton := jsDoc.Call(getElementById, "saveRoleButton")
+	if saveRoleButton.Truthy() {
+		saveRoleButton.Set(onclick, js.FuncOf(saveRoleAction))
 	}
 
 	// keep the program active to allow function call from HTML/JavaScript
