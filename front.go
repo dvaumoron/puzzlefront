@@ -53,22 +53,25 @@ func loginRegisterAction(this js.Value, args []js.Value) any {
 
 func saveRoleAction(this js.Value, args []js.Value) any {
 	jsDoc := js.Global().Get(document)
-	if jsDoc.Truthy() {
-		editRoleForm := jsDoc.Call(getElementById, "editRoleForm")
-		if editRoleForm.Truthy() {
-			editRoleNameField := jsDoc.Call(getElementById, "loginRegisterField")
-			if editRoleNameField.Truthy() {
-				roleName := editRoleNameField.Get(value).String()
-				if strings.EqualFold(roleName, "new") {
-					errorMessageSpan := jsDoc.Call(getElementById, "errorBadRoleNameMessage")
-					if errorMessageSpan.Truthy() {
-						alert(errorMessageSpan.Get(innerText).String())
-					}
-				} else {
-					editRoleForm.Call(submit)
-				}
-			}
+	if !jsDoc.Truthy() {
+		return nil
+	}
+	editRoleForm := jsDoc.Call(getElementById, "editRoleForm")
+	if !editRoleForm.Truthy() {
+		return nil
+	}
+	editRoleNameField := jsDoc.Call(getElementById, "loginRegisterField")
+	if editRoleNameField.Truthy() {
+		return nil
+	}
+	roleName := editRoleNameField.Get(value).String()
+	if strings.EqualFold(roleName, "new") {
+		errorMessageSpan := jsDoc.Call(getElementById, "errorBadRoleNameMessage")
+		if errorMessageSpan.Truthy() {
+			alert(errorMessageSpan.Get(innerText).String())
 		}
+	} else {
+		editRoleForm.Call(submit)
 	}
 	return nil
 }
