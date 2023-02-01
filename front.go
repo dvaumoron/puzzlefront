@@ -78,12 +78,10 @@ func wikiLinkConstructor(this js.Value, args []js.Value) any {
 		lang = langAttr.String()
 	}
 
-	const viewMode = "/view/"
-
 	var linkBuilder strings.Builder
 	linkBuilder.WriteString(wiki)
 	linkBuilder.WriteString(lang)
-	linkBuilder.WriteString(viewMode)
+	linkBuilder.WriteString("/view/")
 	linkBuilder.WriteString(title)
 
 	shadow := attachShadow(this)
