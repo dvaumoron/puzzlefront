@@ -22,55 +22,34 @@ import (
 	"syscall/js"
 )
 
-const document = "document"
-const getElementById = "getElementById"
-const innerText = "innerText"
-const onclick = "onclick"
-const submit = "submit"
-const value = "value"
-
-func alert(message string) {
-	jsAlert := js.Global().Get("alert")
-	if jsAlert.Truthy() {
-		jsAlert.Invoke(message)
-	}
-}
-
 func loginRegisterAction(this js.Value, args []js.Value) any {
-	jsDoc := js.Global().Get(document)
-	if !jsDoc.Truthy() {
-		return nil
-	}
-	loginForm := jsDoc.Call(getElementById, "loginForm")
+	doc := js.Global().Get(document)
+	loginForm := doc.Call(getElementById, "loginForm")
 	if !loginForm.Truthy() {
 		return nil
 	}
-	loginRegisterField := jsDoc.Call(getElementById, "loginRegisterField")
+
+	loginRegisterField := doc.Call(getElementById, "loginRegisterField")
 	if loginRegisterField.Truthy() {
-		loginRegisterField.Set(value, "true")
+		loginRegisterField.Set(value, true)
 		loginForm.Call(submit)
 	}
 	return nil
 }
 
 func saveRoleAction(this js.Value, args []js.Value) any {
-	jsDoc := js.Global().Get(document)
-	if !jsDoc.Truthy() {
+	doc := js.Global().Get(document)
+	editRoleForm := doc.Call(getElementById, "editRoleForm")
+	editRoleNameField := doc.Call(getElementById, "loginRegisterField")
+	if !(editRoleForm.Truthy() && editRoleNameField.Truthy()) {
 		return nil
 	}
-	editRoleForm := jsDoc.Call(getElementById, "editRoleForm")
-	if !editRoleForm.Truthy() {
-		return nil
-	}
-	editRoleNameField := jsDoc.Call(getElementById, "loginRegisterField")
-	if !editRoleNameField.Truthy() {
-		return nil
-	}
+
 	roleName := editRoleNameField.Get(value).String()
 	if strings.EqualFold(roleName, "new") {
-		errorMessageSpan := jsDoc.Call(getElementById, "errorBadRoleNameMessage")
+		errorMessageSpan := doc.Call(getElementById, "errorBadRoleNameMessage")
 		if errorMessageSpan.Truthy() {
-			alert(errorMessageSpan.Get(innerText).String())
+			alert(errorMessageSpan.Get(textContent).String())
 		}
 	} else {
 		editRoleForm.Call(submit)
@@ -78,21 +57,91 @@ func saveRoleAction(this js.Value, args []js.Value) any {
 	return nil
 }
 
-func main() {
-	jsDoc := js.Global().Get(document)
-	if !jsDoc.Truthy() {
-		return
+func wikiLinkConstructor(this js.Value, args []js.Value) any {
+	global := js.Global()
+	doc := global.Get(document)
+
+	wikiAttr := this.Call(getAttribute, "wiki")
+	langAttr := this.Call(getAttribute, "lang")
+	title := this.Call(getAttribute, "title").String() // always set
+
+	wiki, lang := extractUrlData(global.Get("location").Get(href).String())
+
+	if wikiAttr.Truthy() {
+		wiki = wikiAttr.String()
+		if wiki[len(wiki)-1] != '/' {
+			wiki += "/"
+		}
 	}
 
-	loginRegisterButton := jsDoc.Call(getElementById, "loginRegisterButton")
+	if langAttr.Truthy() {
+		lang = langAttr.String()
+	}
+
+	const viewMode = "/view/"
+
+	var linkBuilder strings.Builder
+	linkBuilder.WriteString(wiki)
+	linkBuilder.WriteString(lang)
+	linkBuilder.WriteString(viewMode)
+	linkBuilder.WriteString(title)
+
+	shadow := attachShadow(this)
+	linkElem := doc.Call(createElement, "a")
+	linkElem.Set(href, linkBuilder.String())
+	linkElem.Set(textContent, this.Get(textContent))
+	shadow.Call(appendChild, linkElem)
+
+	// set the computed value on the Javascript Object
+	this.Set("wiki", wiki)
+	this.Set("lang", lang)
+	this.Set("title", title)
+	return this
+}
+
+func extractUrlData(url string) (string, string) {
+	start := 0
+	end := 0
+	count := 0
+	index := len(url) - 2
+	for ; ; index-- {
+		if url[index] == '/' {
+			count++
+			if count == 2 {
+				end = index
+			} else if count == 3 {
+				start = index + 1
+				break
+			}
+		}
+	}
+	return url[:start], url[start:end]
+}
+
+func main() {
+	global := js.Global()
+	doc := global.Get(document)
+
+	loginRegisterButton := doc.Call(getElementById, "loginRegisterButton")
 	if loginRegisterButton.Truthy() {
 		loginRegisterButton.Set(onclick, js.FuncOf(loginRegisterAction))
 	}
 
-	saveRoleButton := jsDoc.Call(getElementById, "saveRoleButton")
+	saveRoleButton := doc.Call(getElementById, "saveRoleButton")
 	if saveRoleButton.Truthy() {
 		saveRoleButton.Set(onclick, js.FuncOf(saveRoleAction))
 	}
+
+	htmlElement := global.Get("HTMLElement")
+
+	wikiLink := jsClass{
+		parent:      htmlElement,
+		constructor: wikiLinkConstructor,
+		content:     jsObject{},
+	}
+
+	customElem := global.Get("customElements")
+	customElem.Call(define, "wiki-link", wikiLink.toJs())
 
 	// keep the program active to allow function call from HTML/JavaScript
 	<-make(chan struct{})
