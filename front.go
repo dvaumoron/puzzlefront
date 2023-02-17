@@ -22,17 +22,62 @@ import (
 	"syscall/js"
 )
 
+const cssHidden = "hidden"
+
 func loginRegisterAction(this js.Value, args []js.Value) any {
+	doc := js.Global().Get(document)
+	loginRegisterButton := doc.Call(getElementById, "loginRegisterButton")
+	if !loginRegisterButton.Truthy() {
+		return nil
+	}
+
+	loginRegisterButton.Set(visible, false)
+
+	confirmPasswordBlockClasses := doc.Call(getElementById, "confirmPasswordBlock").Get(classList)
+	if !confirmPasswordBlockClasses.Truthy() {
+		return nil
+	}
+
+	confirmPasswordBlockClasses.Call(toggle, cssHidden)
+
+	loginRegisterButton2Classes := doc.Call(getElementById, "loginRegisterButton2").Get(classList)
+	if !loginRegisterButton2Classes.Truthy() {
+		return nil
+	}
+
+	loginRegisterButton2Classes.Call(toggle, cssHidden)
+
+	return nil
+}
+
+func loginRegisterAction2(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
 	loginForm := doc.Call(getElementById, "loginForm")
 	if !loginForm.Truthy() {
 		return nil
 	}
 
+	passwordField := doc.Call(getElementById, "passwordField")
+	if !passwordField.Truthy() {
+		return nil
+	}
+
+	confirmPasswordField := doc.Call(getElementById, "confirmPasswordField")
+	if !confirmPasswordField.Truthy() {
+		return nil
+	}
+
 	loginRegisterField := doc.Call(getElementById, "loginRegisterField")
 	if loginRegisterField.Truthy() {
-		loginRegisterField.Set(value, true)
-		loginForm.Call(submit)
+		if passwordField.Get(value).String() == confirmPasswordField.Get(value).String() {
+			loginRegisterField.Set(value, true)
+			loginForm.Call(submit)
+		} else {
+			errorMessageSpan := doc.Call(getElementById, "errorWrongConfimPasswordMessage")
+			if errorMessageSpan.Truthy() {
+				alert(errorMessageSpan.Get(textContent).String())
+			}
+		}
 	}
 	return nil
 }
@@ -123,6 +168,11 @@ func main() {
 	loginRegisterButton := doc.Call(getElementById, "loginRegisterButton")
 	if loginRegisterButton.Truthy() {
 		loginRegisterButton.Set(onclick, js.FuncOf(loginRegisterAction))
+	}
+
+	loginRegisterButton2 := doc.Call(getElementById, "loginRegisterButton2")
+	if loginRegisterButton2.Truthy() {
+		loginRegisterButton2.Set(onclick, js.FuncOf(loginRegisterAction2))
 	}
 
 	saveRoleButton := doc.Call(getElementById, "saveRoleButton")
