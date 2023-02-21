@@ -102,6 +102,34 @@ func saveRoleAction(this js.Value, args []js.Value) any {
 	return nil
 }
 
+func disablePublishPost(this js.Value, args []js.Value) any {
+	publishPostButton := js.Global().Get(document).Call(getElementById, "publishPostButton")
+	publishPostButton.Set(onclick, js.FuncOf(displayPublishErrorAction))
+	return nil
+}
+
+func publishPostAction(this js.Value, args []js.Value) any {
+	publishPostForm := js.Global().Get(document).Call(getElementById, "publishPostForm")
+	if publishPostForm.Truthy() {
+		target := publishPostForm.Call(getAttribute, action).String()
+		publishPostForm.Set(action, convertBlogPreviewUrlToPublish(target))
+		publishPostForm.Call(submit)
+	}
+	return nil
+}
+
+func convertBlogPreviewUrlToPublish(url string) string {
+	return url[:strings.LastIndexByte(url, '/')+1] + "save"
+}
+
+func displayPublishErrorAction(this js.Value, args []js.Value) any {
+	errorMessageSpan := js.Global().Get(document).Call(getElementById, "errorModifiedMarkdownMessage")
+	if errorMessageSpan.Truthy() {
+		alert(errorMessageSpan.Get(textContent).String())
+	}
+	return nil
+}
+
 func wikiLinkConstructor(this js.Value, args []js.Value) any {
 	global := js.Global()
 	doc := global.Get(document)
@@ -110,7 +138,7 @@ func wikiLinkConstructor(this js.Value, args []js.Value) any {
 	langAttr := this.Call(getAttribute, "lang")
 	title := this.Call(getAttribute, "title").String() // always set
 
-	wiki, lang := extractUrlData(global.Get("location").Get(href).String())
+	wiki, lang := extractWikiDataFromUrl(global.Get(location).Get(href).String())
 
 	if wikiAttr.Truthy() {
 		wiki = wikiAttr.String()
@@ -142,7 +170,7 @@ func wikiLinkConstructor(this js.Value, args []js.Value) any {
 	return this
 }
 
-func extractUrlData(url string) (string, string) {
+func extractWikiDataFromUrl(url string) (string, string) {
 	start := 0
 	end := 0
 	count := 0
@@ -178,6 +206,15 @@ func main() {
 	saveRoleButton := doc.Call(getElementById, "saveRoleButton")
 	if saveRoleButton.Truthy() {
 		saveRoleButton.Set(onclick, js.FuncOf(saveRoleAction))
+	}
+
+	postTitleField := doc.Call(getElementById, "postTitleField")
+	postMarkdownField := doc.Call(getElementById, "postMarkdownField")
+	publishPostButton := doc.Call(getElementById, "publishPostButton")
+	if postTitleField.Truthy() && postMarkdownField.Truthy() && publishPostButton.Truthy() {
+		postTitleField.Set(onchange, js.FuncOf(disablePublishPost))
+		postMarkdownField.Set(onchange, js.FuncOf(disablePublishPost))
+		publishPostButton.Set(onclick, js.FuncOf(publishPostAction))
 	}
 
 	htmlElement := global.Get("HTMLElement")
