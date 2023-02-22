@@ -130,6 +130,34 @@ func displayPublishErrorAction(this js.Value, args []js.Value) any {
 	return nil
 }
 
+func changePasswordAction(this js.Value, args []js.Value) any {
+	doc := js.Global().Get(document)
+	changePasswordForm := doc.Call(getElementById, "changePasswordForm")
+	if !changePasswordForm.Truthy() {
+		return nil
+	}
+
+	passwordField := doc.Call(getElementById, "passwordField")
+	if !passwordField.Truthy() {
+		return nil
+	}
+
+	confirmPasswordField := doc.Call(getElementById, "confirmPasswordField")
+	if !confirmPasswordField.Truthy() {
+		return nil
+	}
+
+	if passwordField.Get(value).String() == confirmPasswordField.Get(value).String() {
+		changePasswordForm.Call(submit)
+	} else {
+		errorMessageSpan := doc.Call(getElementById, "errorWrongConfimPasswordMessage")
+		if errorMessageSpan.Truthy() {
+			alert(errorMessageSpan.Get(textContent).String())
+		}
+	}
+	return nil
+}
+
 func wikiLinkConstructor(this js.Value, args []js.Value) any {
 	global := js.Global()
 	doc := global.Get(document)
@@ -215,6 +243,11 @@ func main() {
 		postTitleField.Set(onchange, js.FuncOf(disablePublishPost))
 		postMarkdownField.Set(onchange, js.FuncOf(disablePublishPost))
 		publishPostButton.Set(onclick, js.FuncOf(publishPostAction))
+	}
+
+	changePasswordButton := doc.Call(getElementById, "changePasswordButton")
+	if changePasswordButton.Truthy() {
+		changePasswordButton.Set(onclick, js.FuncOf(changePasswordAction))
 	}
 
 	htmlElement := global.Get("HTMLElement")
