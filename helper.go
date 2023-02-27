@@ -34,7 +34,6 @@ const onclick = "onclick"
 const onchange = "onchange"
 const submit = "submit"
 const value = "value"
-const visible = "visible"
 
 const Object = "Object"
 

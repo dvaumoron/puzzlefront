@@ -26,12 +26,12 @@ const cssHidden = "hidden"
 
 func loginRegisterAction(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
-	loginRegisterButton := doc.Call(getElementById, "loginRegisterButton")
-	if !loginRegisterButton.Truthy() {
+	loginRegisterButtonClasses := doc.Call(getElementById, "loginRegisterButton").Get(classList)
+	if !loginRegisterButtonClasses.Truthy() {
 		return nil
 	}
 
-	loginRegisterButton.Set(visible, false)
+	loginRegisterButtonClasses.Call(toggle, cssHidden)
 
 	confirmPasswordBlockClasses := doc.Call(getElementById, "confirmPasswordBlock").Get(classList)
 	if !confirmPasswordBlockClasses.Truthy() {
