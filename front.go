@@ -85,13 +85,13 @@ func loginRegisterAction2(this js.Value, args []js.Value) any {
 func saveRoleAction(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
 	editRoleForm := doc.Call(getElementById, "editRoleForm")
-	editRoleNameField := doc.Call(getElementById, "loginRegisterField")
+	editRoleNameField := doc.Call(getElementById, "editRoleNameField")
 	if !(editRoleForm.Truthy() && editRoleNameField.Truthy()) {
 		return nil
 	}
 
 	roleName := editRoleNameField.Get(value).String()
-	if strings.EqualFold(roleName, "new") {
+	if roleName == "" || strings.EqualFold(roleName, "new") {
 		errorMessageSpan := doc.Call(getElementById, "errorBadRoleNameMessage")
 		if errorMessageSpan.Truthy() {
 			alert(errorMessageSpan.Get(textContent).String())
