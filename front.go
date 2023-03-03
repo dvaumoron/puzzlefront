@@ -111,7 +111,7 @@ func disablePublishPost(this js.Value, args []js.Value) any {
 func publishPostAction(this js.Value, args []js.Value) any {
 	publishPostForm := js.Global().Get(document).Call(getElementById, "publishPostForm")
 	if publishPostForm.Truthy() {
-		target := publishPostForm.Call(getAttribute, action).String()
+		target := publishPostForm.Get(action).String()
 		publishPostForm.Set(action, convertBlogPreviewUrlToPublish(target))
 		publishPostForm.Call(submit)
 	}
@@ -158,25 +158,26 @@ func changePasswordAction(this js.Value, args []js.Value) any {
 	return nil
 }
 
-func wikiLinkConstructor(this js.Value, args []js.Value) any {
-	global := js.Global()
-	doc := global.Get(document)
+func buildWikiLink(this js.Value, args []js.Value) any {
+	if len(args) < 3 {
+		return "/error=ErrorTechnicalProblem"
+	}
 
-	wikiAttr := this.Call(getAttribute, "wiki")
-	langAttr := this.Call(getAttribute, "lang")
-	title := this.Call(getAttribute, "title").String() // always set
+	wikiArg := args[0]
+	langArg := args[1]
+	title := args[2].String() // always set
 
-	wiki, lang := extractWikiDataFromUrl(global.Get(location).Get(href).String())
+	wiki, lang := extractWikiDataFromUrl(js.Global().Get(location).Get(href).String())
 
-	if wikiAttr.Truthy() {
-		wiki = wikiAttr.String()
+	if wikiArg.Truthy() {
+		wiki = wikiArg.String()
 		if wiki[len(wiki)-1] != '/' {
 			wiki += "/"
 		}
 	}
 
-	if langAttr.Truthy() {
-		lang = langAttr.String()
+	if langArg.Truthy() {
+		lang = langArg.String()
 	}
 
 	var linkBuilder strings.Builder
@@ -184,18 +185,7 @@ func wikiLinkConstructor(this js.Value, args []js.Value) any {
 	linkBuilder.WriteString(lang)
 	linkBuilder.WriteString("/view/")
 	linkBuilder.WriteString(title)
-
-	shadow := attachShadow(this)
-	linkElem := doc.Call(createElement, "a")
-	linkElem.Set(href, linkBuilder.String())
-	linkElem.Set(textContent, this.Get(textContent))
-	shadow.Call(appendChild, linkElem)
-
-	// set the computed value on the Javascript Object
-	this.Set("wiki", wiki)
-	this.Set("lang", lang)
-	this.Set("title", title)
-	return this
+	return linkBuilder.String()
 }
 
 func extractWikiDataFromUrl(url string) (string, string) {
@@ -250,16 +240,7 @@ func main() {
 		changePasswordButton.Set(onclick, js.FuncOf(changePasswordAction))
 	}
 
-	htmlElement := global.Get("HTMLElement")
-
-	wikiLink := jsClass{
-		parent:      htmlElement,
-		constructor: wikiLinkConstructor,
-		content:     jsObject{},
-	}
-
-	customElem := global.Get("customElements")
-	customElem.Call(define, "wiki-link", wikiLink.toJs())
+	global.Set("buildWikiLink", js.FuncOf(buildWikiLink))
 
 	// keep the program active to allow function call from HTML/JavaScript
 	<-make(chan struct{})
