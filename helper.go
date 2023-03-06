@@ -32,9 +32,11 @@ const onchange = "onchange"
 const submit = "submit"
 const value = "value"
 
-func alert(message string) {
-	jsAlert := js.Global().Get("alert")
-	if jsAlert.Truthy() {
-		jsAlert.Invoke(message)
+func alertKey(messageSpanId string) {
+	global := js.Global()
+	jsAlert := global.Get("alert")
+	errorMessageSpan := global.Get(document).Call(getElementById, messageSpanId)
+	if jsAlert.Truthy() && errorMessageSpan.Truthy() {
+		jsAlert.Invoke(errorMessageSpan.Get(textContent).String())
 	}
 }

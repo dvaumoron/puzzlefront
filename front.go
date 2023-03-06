@@ -24,60 +24,70 @@ import (
 
 const cssHidden = "hidden"
 
+func loginSubmitAction(this js.Value, args []js.Value) any {
+	doc := js.Global().Get(document)
+	loginForm := doc.Call(getElementById, "loginForm")
+	loginField := doc.Call(getElementById, "loginField")
+	passwordField := doc.Call(getElementById, "passwordField")
+	if !(loginForm.Truthy() && loginField.Truthy() && passwordField.Truthy()) {
+		return nil
+	}
+
+	if loginField.Get(value).String() == "" {
+		alertKey("errorEmptyLoginMessage")
+		return nil
+	}
+
+	if passwordField.Get(value).String() == "" {
+		alertKey("errorEmptyPasswordMessage")
+		return nil
+	}
+
+	loginForm.Call(submit)
+	return nil
+}
+
 func loginRegisterAction(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
 	loginRegisterButtonClasses := doc.Call(getElementById, "loginRegisterButton").Get(classList)
-	if !loginRegisterButtonClasses.Truthy() {
+	confirmPasswordBlockClasses := doc.Call(getElementById, "confirmPasswordBlock").Get(classList)
+	loginRegisterButton2Classes := doc.Call(getElementById, "loginRegisterButton2").Get(classList)
+	if !(loginRegisterButtonClasses.Truthy() && confirmPasswordBlockClasses.Truthy() && loginRegisterButton2Classes.Truthy()) {
 		return nil
 	}
 
 	loginRegisterButtonClasses.Call(toggle, cssHidden)
-
-	confirmPasswordBlockClasses := doc.Call(getElementById, "confirmPasswordBlock").Get(classList)
-	if !confirmPasswordBlockClasses.Truthy() {
-		return nil
-	}
-
 	confirmPasswordBlockClasses.Call(toggle, cssHidden)
-
-	loginRegisterButton2Classes := doc.Call(getElementById, "loginRegisterButton2").Get(classList)
-	if !loginRegisterButton2Classes.Truthy() {
-		return nil
-	}
-
 	loginRegisterButton2Classes.Call(toggle, cssHidden)
-
 	return nil
 }
 
 func loginRegisterAction2(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
 	loginForm := doc.Call(getElementById, "loginForm")
-	if !loginForm.Truthy() {
-		return nil
-	}
-
+	loginField := doc.Call(getElementById, "loginField")
 	passwordField := doc.Call(getElementById, "passwordField")
-	if !passwordField.Truthy() {
-		return nil
-	}
-
 	confirmPasswordField := doc.Call(getElementById, "confirmPasswordField")
-	if !confirmPasswordField.Truthy() {
+	loginRegisterField := doc.Call(getElementById, "loginRegisterField")
+	if !(loginForm.Truthy() && loginField.Truthy() && passwordField.Truthy() && confirmPasswordField.Truthy() && loginRegisterField.Truthy()) {
 		return nil
 	}
 
-	loginRegisterField := doc.Call(getElementById, "loginRegisterField")
-	if loginRegisterField.Truthy() {
-		if passwordField.Get(value).String() == confirmPasswordField.Get(value).String() {
-			loginRegisterField.Set(value, true)
-			loginForm.Call(submit)
-		} else {
-			errorMessageSpan := doc.Call(getElementById, "errorWrongConfimPasswordMessage")
-			if errorMessageSpan.Truthy() {
-				alert(errorMessageSpan.Get(textContent).String())
-			}
-		}
+	if loginField.Get(value).String() == "" {
+		alertKey("errorEmptyLoginMessage")
+		return nil
+	}
+
+	if passwordField.Get(value).String() == "" {
+		alertKey("errorEmptyPasswordMessage")
+		return nil
+	}
+
+	if passwordField.Get(value).String() == confirmPasswordField.Get(value).String() {
+		loginRegisterField.Set(value, true)
+		loginForm.Call(submit)
+	} else {
+		alertKey("errorWrongConfimPasswordMessage")
 	}
 	return nil
 }
@@ -92,10 +102,7 @@ func saveRoleAction(this js.Value, args []js.Value) any {
 
 	roleName := editRoleNameField.Get(value).String()
 	if roleName == "" || strings.EqualFold(roleName, "new") {
-		errorMessageSpan := doc.Call(getElementById, "errorBadRoleNameMessage")
-		if errorMessageSpan.Truthy() {
-			alert(errorMessageSpan.Get(textContent).String())
-		}
+		alertKey("errorBadRoleNameMessage")
 	} else {
 		editRoleForm.Call(submit)
 	}
@@ -109,12 +116,27 @@ func disablePublishPost(this js.Value, args []js.Value) any {
 }
 
 func publishPostAction(this js.Value, args []js.Value) any {
-	publishPostForm := js.Global().Get(document).Call(getElementById, "publishPostForm")
-	if publishPostForm.Truthy() {
-		target := publishPostForm.Get(action).String()
-		publishPostForm.Set(action, convertBlogPreviewUrlToPublish(target))
-		publishPostForm.Call(submit)
+	doc := js.Global().Get(document)
+	publishPostForm := doc.Call(getElementById, "publishPostForm")
+	postTitleField := doc.Call(getElementById, "postTitleField")
+	postMarkdownField := doc.Call(getElementById, "postMarkdownField")
+	if !(publishPostForm.Truthy() && postTitleField.Truthy() && postMarkdownField.Truthy()) {
+		return nil
 	}
+
+	if postTitleField.Get(value).String() == "" {
+		alertKey("errorEmptyPostTitleMessage")
+		return nil
+	}
+
+	if postMarkdownField.Get(value).String() == "" {
+		alertKey("errorEmptyPostContentMessage")
+		return nil
+	}
+
+	target := publishPostForm.Get(action).String()
+	publishPostForm.Set(action, convertBlogPreviewUrlToPublish(target))
+	publishPostForm.Call(submit)
 	return nil
 }
 
@@ -123,44 +145,58 @@ func convertBlogPreviewUrlToPublish(url string) string {
 }
 
 func displayPublishErrorAction(this js.Value, args []js.Value) any {
-	errorMessageSpan := js.Global().Get(document).Call(getElementById, "errorModifiedMarkdownMessage")
-	if errorMessageSpan.Truthy() {
-		alert(errorMessageSpan.Get(textContent).String())
+	alertKey("errorModifiedMarkdownMessage")
+	return nil
+}
+
+func changeLoginAction(this js.Value, args []js.Value) any {
+	doc := js.Global().Get(document)
+	changeLoginForm := doc.Call(getElementById, "changeLoginForm")
+	loginField := doc.Call(getElementById, "loginField")
+	passwordField := doc.Call(getElementById, "passwordField")
+	if !(changeLoginForm.Truthy() && loginField.Truthy() && passwordField.Truthy()) {
+		return nil
 	}
+
+	if loginField.Get(value).String() == "" {
+		alertKey("errorEmptyLoginMessage")
+		return nil
+	}
+
+	if passwordField.Get(value).String() == "" {
+		alertKey("errorEmptyPasswordMessage")
+		return nil
+	}
+
+	changeLoginForm.Call(submit)
 	return nil
 }
 
 func changePasswordAction(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
 	changePasswordForm := doc.Call(getElementById, "changePasswordForm")
-	if !changePasswordForm.Truthy() {
+	passwordField := doc.Call(getElementById, "changePasswordField")
+	confirmPasswordField := doc.Call(getElementById, "confirmChangePasswordField")
+	if !(changePasswordForm.Truthy() && passwordField.Truthy() && confirmPasswordField.Truthy()) {
 		return nil
 	}
 
-	passwordField := doc.Call(getElementById, "passwordField")
-	if !passwordField.Truthy() {
-		return nil
-	}
-
-	confirmPasswordField := doc.Call(getElementById, "confirmPasswordField")
-	if !confirmPasswordField.Truthy() {
+	if passwordField.Get(value).String() == "" {
+		alertKey("errorEmptyPasswordMessage")
 		return nil
 	}
 
 	if passwordField.Get(value).String() == confirmPasswordField.Get(value).String() {
 		changePasswordForm.Call(submit)
 	} else {
-		errorMessageSpan := doc.Call(getElementById, "errorWrongConfimPasswordMessage")
-		if errorMessageSpan.Truthy() {
-			alert(errorMessageSpan.Get(textContent).String())
-		}
+		alertKey("errorWrongConfimPasswordMessage")
 	}
 	return nil
 }
 
 func buildWikiLink(this js.Value, args []js.Value) any {
 	if len(args) < 3 {
-		return "/error=ErrorTechnicalProblem"
+		return "/?error=ErrorTechnicalProblem"
 	}
 
 	wikiArg := args[0]
@@ -211,6 +247,11 @@ func main() {
 	global := js.Global()
 	doc := global.Get(document)
 
+	loginSubmitButton := doc.Call(getElementById, "loginSubmitButton")
+	if loginSubmitButton.Truthy() {
+		loginSubmitButton.Set(onclick, js.FuncOf(loginSubmitAction))
+	}
+
 	loginRegisterButton := doc.Call(getElementById, "loginRegisterButton")
 	if loginRegisterButton.Truthy() {
 		loginRegisterButton.Set(onclick, js.FuncOf(loginRegisterAction))
@@ -233,6 +274,11 @@ func main() {
 		postTitleField.Set(onchange, js.FuncOf(disablePublishPost))
 		postMarkdownField.Set(onchange, js.FuncOf(disablePublishPost))
 		publishPostButton.Set(onclick, js.FuncOf(publishPostAction))
+	}
+
+	changeLoginButton := doc.Call(getElementById, "changeLoginButton")
+	if changeLoginButton.Truthy() {
+		changeLoginButton.Set(onclick, js.FuncOf(changeLoginAction))
 	}
 
 	changePasswordButton := doc.Call(getElementById, "changePasswordButton")
