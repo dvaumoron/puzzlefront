@@ -149,6 +149,30 @@ func displayPublishErrorAction(this js.Value, args []js.Value) any {
 	return nil
 }
 
+func commentAction(this js.Value, args []js.Value) any {
+	doc := js.Global().Get(document)
+	commentForm := doc.Call(getElementById, "commentForm")
+	commentField := doc.Call(getElementById, "commentField")
+	if !(commentForm.Truthy() && commentField.Truthy()) {
+		return nil
+	}
+
+	comment := commentField.Get(value).String()
+	if comment == "" {
+		alertKey("errorEmptyCommentMessage")
+		return nil
+	}
+
+	defaultCommentSpan := doc.Call(getElementById, "unmodifiedComment")
+	if defaultCommentSpan.Truthy() && defaultCommentSpan.Get(textContent).String() == comment {
+		alertKey("errorEmptyCommentMessage")
+		return nil
+	}
+
+	commentForm.Call(submit)
+	return nil
+}
+
 func changeLoginAction(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
 	changeLoginForm := doc.Call(getElementById, "changeLoginForm")
