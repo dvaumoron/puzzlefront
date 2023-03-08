@@ -115,6 +115,36 @@ func disablePublishPost(this js.Value, args []js.Value) any {
 	return nil
 }
 
+func previewPostAction(this js.Value, args []js.Value) any {
+	doc := js.Global().Get(document)
+	previewPostForm := doc.Call(getElementById, "previewPostForm")
+	postTitleField := doc.Call(getElementById, "postTitleField")
+	postMarkdownField := doc.Call(getElementById, "postMarkdownField")
+	if !(previewPostForm.Truthy() && postTitleField.Truthy() && postMarkdownField.Truthy()) {
+		return nil
+	}
+
+	if postTitleField.Get(value).String() == "" {
+		alertKey("errorEmptyPostTitleMessage")
+		return nil
+	}
+
+	markdown := postMarkdownField.Get(value).String()
+	if markdown == "" {
+		alertKey("errorEmptyPostContentMessage")
+		return nil
+	}
+
+	defaultCommentSpan := doc.Call(getElementById, "unmodifiedMessage")
+	if defaultCommentSpan.Truthy() && defaultCommentSpan.Get(textContent).String() == markdown {
+		alertKey("errorEmptyPostContentMessage")
+		return nil
+	}
+
+	previewPostForm.Call(submit)
+	return nil
+}
+
 func publishPostAction(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
 	publishPostForm := doc.Call(getElementById, "publishPostForm")
@@ -338,6 +368,11 @@ func main() {
 		saveRoleButton.Set(onclick, js.FuncOf(saveRoleAction))
 	}
 
+	previewPostButton := doc.Call(getElementById, "previewPostButton")
+	if previewPostButton.Truthy() {
+		previewPostButton.Set(onclick, js.FuncOf(previewPostAction))
+	}
+
 	postTitleField := doc.Call(getElementById, "postTitleField")
 	postMarkdownField := doc.Call(getElementById, "postMarkdownField")
 	publishPostButton := doc.Call(getElementById, "publishPostButton")
@@ -345,6 +380,11 @@ func main() {
 		postTitleField.Set(onchange, js.FuncOf(disablePublishPost))
 		postMarkdownField.Set(onchange, js.FuncOf(disablePublishPost))
 		publishPostButton.Set(onclick, js.FuncOf(publishPostAction))
+	}
+
+	commentButton := doc.Call(getElementById, "commentButton")
+	if commentButton.Truthy() {
+		commentButton.Set(onclick, js.FuncOf(commentAction))
 	}
 
 	changeLoginButton := doc.Call(getElementById, "changeLoginButton")
