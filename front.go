@@ -267,6 +267,53 @@ func extractWikiDataFromUrl(url string) (string, string) {
 	return url[:start], url[start:end]
 }
 
+func createThreadAction(this js.Value, args []js.Value) any {
+	doc := js.Global().Get(document)
+	createThreadForm := doc.Call(getElementById, "createThreadForm")
+	threadTitleField := doc.Call(getElementById, "threadTitleField")
+	forumMessageField := doc.Call(getElementById, "forumMessageField")
+	if !(createThreadForm.Truthy() && threadTitleField.Truthy() && forumMessageField.Truthy()) {
+		return nil
+	}
+
+	if threadTitleField.Get(value).String() == "" {
+		alertKey("errorEmptyThreadTitleMessage")
+		return nil
+	}
+
+	if forumMessageField.Get(value).String() == "" {
+		alertKey("errorEmptyForumMessageMessage")
+		return nil
+	}
+
+	createThreadForm.Call(submit)
+	return nil
+}
+
+func createForumMessageAction(this js.Value, args []js.Value) any {
+	doc := js.Global().Get(document)
+	createForumMessageForm := doc.Call(getElementById, "createForumMessageForm")
+	forumMessageField := doc.Call(getElementById, "forumMessageField")
+	if !(createForumMessageForm.Truthy() && forumMessageField.Truthy()) {
+		return nil
+	}
+
+	message := forumMessageField.Get(value).String()
+	if message == "" {
+		alertKey("errorEmptyForumMessageMessage")
+		return nil
+	}
+
+	defaultCommentSpan := doc.Call(getElementById, "unmodifiedMessage")
+	if defaultCommentSpan.Truthy() && defaultCommentSpan.Get(textContent).String() == message {
+		alertKey("errorEmptyForumMessageMessage")
+		return nil
+	}
+
+	createForumMessageForm.Call(submit)
+	return nil
+}
+
 func main() {
 	global := js.Global()
 	doc := global.Get(document)
@@ -311,6 +358,16 @@ func main() {
 	}
 
 	global.Set("buildWikiLink", js.FuncOf(buildWikiLink))
+
+	createThreadButton := doc.Call(getElementById, "createThreadButton")
+	if createThreadButton.Truthy() {
+		createThreadButton.Set(onclick, js.FuncOf(createThreadAction))
+	}
+
+	createForumMessageButton := doc.Call(getElementById, "createForumMessageButton")
+	if createForumMessageButton.Truthy() {
+		createForumMessageButton.Set(onclick, js.FuncOf(createForumMessageAction))
+	}
 
 	// keep the program active to allow function call from HTML/JavaScript
 	<-make(chan struct{})
