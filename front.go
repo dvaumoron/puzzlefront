@@ -22,7 +22,7 @@ import (
 	"syscall/js"
 )
 
-const cssHidden = "hidden"
+const cssHidden = "hiddendiv"
 
 func loginSubmitAction(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
