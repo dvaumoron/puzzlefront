@@ -22,7 +22,7 @@ import (
 	"syscall/js"
 )
 
-const cssHidden = "hiddendiv"
+const cssHidden = "hide"
 
 func loginSubmitAction(this js.Value, args []js.Value) any {
 	doc := js.Global().Get(document)
@@ -129,14 +129,7 @@ func previewPostAction(this js.Value, args []js.Value) any {
 		return nil
 	}
 
-	markdown := postMarkdownField.Get(value).String()
-	if markdown == "" {
-		alertKey("errorEmptyPostContentMessage")
-		return nil
-	}
-
-	defaultCommentSpan := doc.Call(getElementById, "unmodifiedMessage")
-	if defaultCommentSpan.Truthy() && defaultCommentSpan.Get(textContent).String() == markdown {
+	if postMarkdownField.Get(value).String() == "" {
 		alertKey("errorEmptyPostContentMessage")
 		return nil
 	}
@@ -189,12 +182,6 @@ func commentAction(this js.Value, args []js.Value) any {
 
 	comment := commentField.Get(value).String()
 	if comment == "" {
-		alertKey("errorEmptyCommentMessage")
-		return nil
-	}
-
-	defaultCommentSpan := doc.Call(getElementById, "unmodifiedComment")
-	if defaultCommentSpan.Truthy() && defaultCommentSpan.Get(textContent).String() == comment {
 		alertKey("errorEmptyCommentMessage")
 		return nil
 	}
@@ -330,12 +317,6 @@ func createForumMessageAction(this js.Value, args []js.Value) any {
 
 	message := forumMessageField.Get(value).String()
 	if message == "" {
-		alertKey("errorEmptyForumMessageMessage")
-		return nil
-	}
-
-	defaultCommentSpan := doc.Call(getElementById, "unmodifiedMessage")
-	if defaultCommentSpan.Truthy() && defaultCommentSpan.Get(textContent).String() == message {
 		alertKey("errorEmptyForumMessageMessage")
 		return nil
 	}
