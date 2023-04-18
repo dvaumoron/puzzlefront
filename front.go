@@ -325,6 +325,11 @@ func createForumMessageAction(this js.Value, args []js.Value) any {
 	return nil
 }
 
+func displayPasswordHelpAction(this js.Value, args []js.Value) any {
+	alertKey("passwordHelpMessage")
+	return nil
+}
+
 func main() {
 	global := js.Global()
 	doc := global.Get(document)
@@ -388,6 +393,11 @@ func main() {
 	createForumMessageButton := doc.Call(getElementById, "createForumMessageButton")
 	if createForumMessageButton.Truthy() {
 		createForumMessageButton.Set(onclick, js.FuncOf(createForumMessageAction))
+	}
+
+	passwordHelp := doc.Call(getElementById, "passwordHelp")
+	if passwordHelp.Truthy() {
+		passwordHelp.Set(onclick, js.FuncOf(displayPasswordHelpAction))
 	}
 
 	// keep the program active to allow function call from HTML/JavaScript
