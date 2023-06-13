@@ -331,6 +331,23 @@ func displayPasswordHelpAction(this js.Value, args []js.Value) any {
 	return nil
 }
 
+func saveImageAction(this js.Value, args []js.Value) any {
+	doc := js.Global().Get(document)
+	editImageForm := doc.Call(getElementById, "editImageForm")
+	editImageTitleField := doc.Call(getElementById, "editImageTitleField")
+	if !(editImageForm.Truthy() && editImageTitleField.Truthy()) {
+		return nil
+	}
+
+	imageTitle := editImageTitleField.Get(value).String()
+	if imageTitle == "" || strings.EqualFold(imageTitle, "new") {
+		alertKey("errorBadImageTitleMessage")
+	} else {
+		editImageForm.Call(submit)
+	}
+	return nil
+}
+
 func main() {
 	global := js.Global()
 	doc := global.Get(document)
@@ -399,6 +416,11 @@ func main() {
 	passwordHelp := doc.Call(getElementById, "passwordHelp")
 	if passwordHelp.Truthy() {
 		passwordHelp.Set(onclick, js.FuncOf(displayPasswordHelpAction))
+	}
+
+	saveImageButton := doc.Call(getElementById, "saveImageButton")
+	if saveImageButton.Truthy() {
+		saveImageButton.Set(onclick, js.FuncOf(saveImageAction))
 	}
 
 	// keep the program active to allow function call from HTML/JavaScript
