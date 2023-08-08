@@ -348,6 +348,7 @@ func saveImageAction(this js.Value, args []js.Value) any {
 	return nil
 }
 
+// TODO extract common validation mechanics
 func main() {
 	global := js.Global()
 	doc := global.Get(document)
