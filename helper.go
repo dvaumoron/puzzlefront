@@ -20,18 +20,21 @@ package main
 
 import "syscall/js"
 
-const document = "document"
-const getElementById = "getElementById"
-const toggle = "toggle"
-const classList = "classList"
-const textContent = "textContent"
-const location = "location"
-const action = "action"
-const href = "href"
-const onclick = "onclick"
-const onchange = "onchange"
-const submit = "submit"
-const value = "value"
+const (
+	document         = "document"
+	getElementById   = "getElementById"
+	querySelectorAll = "querySelectorAll"
+	toggle           = "toggle"
+	classList        = "classList"
+	textContent      = "textContent"
+	location         = "location"
+	action           = "action"
+	href             = "href"
+	onclick          = "onclick"
+	onchange         = "onchange"
+	submit           = "submit"
+	value            = "value"
+)
 
 func alertKey(messageSpanId string) {
 	global := js.Global()
