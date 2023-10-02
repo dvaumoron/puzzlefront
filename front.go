@@ -38,7 +38,7 @@ func registerValidation() {
 
 	for i := 0; i < size; i++ {
 		if button := buttons.Index(i); button.Truthy() {
-			formId := button.Get("validate-form").String()
+			formId := button.Call(getAttribute, "validate-form").String()
 			button.Set(onclick, js.FuncOf(func(this js.Value, args []js.Value) any {
 				formToValidate := doc.Call(getElementById, formId)
 				if !formToValidate.Truthy() {
@@ -58,14 +58,14 @@ func registerValidation() {
 
 					fieldValue := field.Get(value).String()
 					if fieldValue == "" {
-						alertKey(field.Get("required-message").String())
+						alertKey(field.Call(getAttribute, "required-message").String())
 						return nil
 					}
 
-					if forbiddenValues := field.Get("forbidden-values").String(); forbiddenValues != "" {
+					if forbiddenValues := field.Call(getAttribute, "forbidden-values").String(); forbiddenValues != "" {
 						for _, forbiddenValue := range strings.Split(forbiddenValues, ",") {
 							if strings.EqualFold(fieldValue, forbiddenValue) {
-								alertKey(field.Get("required-message").String())
+								alertKey(field.Call(getAttribute, "required-message").String())
 								return nil
 							}
 						}
@@ -83,13 +83,13 @@ func registerValidation() {
 						return nil
 					}
 
-					field2 := doc.Call(getElementById, field.Get("confirm-field").String())
+					field2 := doc.Call(getElementById, field.Call(getAttribute, "confirm-field").String())
 					if !field2.Truthy() {
 						return nil
 					}
 
 					if field.Get(value).String() != field2.Get(value).String() {
-						alertKey(field.Get("confirm-message").String())
+						alertKey(field.Call(getAttribute, "confirm-message").String())
 						return nil
 					}
 				}

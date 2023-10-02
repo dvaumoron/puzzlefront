@@ -24,6 +24,7 @@ const (
 	document         = "document"
 	getElementById   = "getElementById"
 	querySelectorAll = "querySelectorAll"
+	getAttribute     = "getAttribute"
 	toggle           = "toggle"
 	classList        = "classList"
 	textContent      = "textContent"
