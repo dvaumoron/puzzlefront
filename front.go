@@ -21,159 +21,83 @@ package main
 import (
 	"strings"
 	"syscall/js"
+
+	fh "github.com/dvaumoron/puzzlefront/helper"
 )
 
 const cssHidden = "hide"
 
-func registerValidation() {
-	doc := js.Global().Get(document)
-	buttons := doc.Call(querySelectorAll, "[validate-form]")
-	if !buttons.Truthy() {
-		return
-	}
-	size := buttons.Length()
-	if size == 0 {
-		return
-	}
-
-	for i := 0; i < size; i++ {
-		if button := buttons.Index(i); button.Truthy() {
-			formId := button.Call(getAttribute, "validate-form").String()
-			button.Set(onclick, js.FuncOf(func(this js.Value, args []js.Value) any {
-				formToValidate := doc.Call(getElementById, formId)
-				if !formToValidate.Truthy() {
-					return nil
-				}
-
-				fields := formToValidate.Call(querySelectorAll, "[required-message]")
-				if !fields.Truthy() {
-					return nil
-				}
-				size := fields.Length()
-				for i := 0; i < size; i++ {
-					field := fields.Index(i)
-					if !field.Truthy() {
-						return nil
-					}
-
-					fieldValue := field.Get(value).String()
-					if fieldValue == "" {
-						alertKey(field.Call(getAttribute, "required-message").String())
-						return nil
-					}
-
-					if forbiddenValues := field.Call(getAttribute, "forbidden-values").String(); forbiddenValues != "" {
-						for _, forbiddenValue := range strings.Split(forbiddenValues, ",") {
-							if strings.EqualFold(fieldValue, forbiddenValue) {
-								alertKey(field.Call(getAttribute, "required-message").String())
-								return nil
-							}
-						}
-					}
-				}
-
-				fields = formToValidate.Call(querySelectorAll, "[confirm-field]")
-				if !fields.Truthy() {
-					return nil
-				}
-				size = fields.Length()
-				for i := 0; i < size; i++ {
-					field := fields.Index(i)
-					if !field.Truthy() {
-						return nil
-					}
-
-					field2 := doc.Call(getElementById, field.Call(getAttribute, "confirm-field").String())
-					if !field2.Truthy() {
-						return nil
-					}
-
-					if field.Get(value).String() != field2.Get(value).String() {
-						alertKey(field.Call(getAttribute, "confirm-message").String())
-						return nil
-					}
-				}
-
-				formToValidate.Call(submit)
-				return nil
-			}))
-		}
-	}
-}
-
 func loginRegisterAction(this js.Value, args []js.Value) any {
-	doc := js.Global().Get(document)
-	loginRegisterButtonClasses := doc.Call(getElementById, "loginRegisterButton").Get(classList)
-	confirmPasswordBlockClasses := doc.Call(getElementById, "confirmPasswordBlock").Get(classList)
-	loginRegisterButton2Classes := doc.Call(getElementById, "loginRegisterButton2").Get(classList)
-	if !(loginRegisterButtonClasses.Truthy() && confirmPasswordBlockClasses.Truthy() && loginRegisterButton2Classes.Truthy()) {
-		return nil
+	doc := js.Global().Get(fh.Document)
+	loginRegisterButtonClasses := doc.Call(fh.GetElementById, "loginRegisterButton").Get(fh.ClassList)
+	confirmPasswordBlockClasses := doc.Call(fh.GetElementById, "confirmPasswordBlock").Get(fh.ClassList)
+	loginRegisterButton2Classes := doc.Call(fh.GetElementById, "loginRegisterButton2").Get(fh.ClassList)
+	if loginRegisterButtonClasses.Truthy() && confirmPasswordBlockClasses.Truthy() && loginRegisterButton2Classes.Truthy() {
+		loginRegisterButtonClasses.Call(fh.Toggle, cssHidden)
+		confirmPasswordBlockClasses.Call(fh.Toggle, cssHidden)
+		loginRegisterButton2Classes.Call(fh.Toggle, cssHidden)
 	}
-
-	loginRegisterButtonClasses.Call(toggle, cssHidden)
-	confirmPasswordBlockClasses.Call(toggle, cssHidden)
-	loginRegisterButton2Classes.Call(toggle, cssHidden)
 	return nil
 }
 
 func loginRegisterAction2(this js.Value, args []js.Value) any {
-	doc := js.Global().Get(document)
-	loginForm := doc.Call(getElementById, "loginForm")
-	loginField := doc.Call(getElementById, "loginField")
-	passwordField := doc.Call(getElementById, "passwordField")
-	confirmPasswordField := doc.Call(getElementById, "confirmPasswordField")
-	loginRegisterField := doc.Call(getElementById, "loginRegisterField")
+	doc := js.Global().Get(fh.Document)
+	loginForm := doc.Call(fh.GetElementById, "loginForm")
+	loginField := doc.Call(fh.GetElementById, "loginField")
+	passwordField := doc.Call(fh.GetElementById, "passwordField")
+	confirmPasswordField := doc.Call(fh.GetElementById, "confirmPasswordField")
+	loginRegisterField := doc.Call(fh.GetElementById, "loginRegisterField")
 	if !(loginForm.Truthy() && loginField.Truthy() && passwordField.Truthy() && confirmPasswordField.Truthy() && loginRegisterField.Truthy()) {
 		return nil
 	}
 
-	if loginField.Get(value).String() == "" {
-		alertKey("errorEmptyLoginMessage")
+	if loginField.Get(fh.Value).String() == "" {
+		fh.AlertKey("errorEmptyLoginMessage")
 		return nil
 	}
 
-	if passwordField.Get(value).String() == "" {
-		alertKey("errorEmptyPasswordMessage")
+	if passwordField.Get(fh.Value).String() == "" {
+		fh.AlertKey("errorEmptyPasswordMessage")
 		return nil
 	}
 
-	if passwordField.Get(value).String() == confirmPasswordField.Get(value).String() {
-		loginRegisterField.Set(value, true)
-		loginForm.Call(submit)
+	if passwordField.Get(fh.Value).String() == confirmPasswordField.Get(fh.Value).String() {
+		loginRegisterField.Set(fh.Value, true)
+		loginForm.Call(fh.Submit)
 	} else {
-		alertKey("errorWrongConfimPasswordMessage")
+		fh.AlertKey("errorWrongConfimPasswordMessage")
 	}
 	return nil
 }
 
 func disablePublishPost(this js.Value, args []js.Value) any {
-	publishPostButton := js.Global().Get(document).Call(getElementById, "publishPostButton")
-	publishPostButton.Set(onclick, js.FuncOf(displayPublishErrorAction))
+	publishPostButton := js.Global().Get(fh.Document).Call(fh.GetElementById, "publishPostButton")
+	publishPostButton.Set(fh.Onclick, js.FuncOf(displayPublishErrorAction))
 	return nil
 }
 
 func publishPostAction(this js.Value, args []js.Value) any {
-	doc := js.Global().Get(document)
-	publishPostForm := doc.Call(getElementById, "publishPostForm")
-	postTitleField := doc.Call(getElementById, "postTitleField")
-	postMarkdownField := doc.Call(getElementById, "postMarkdownField")
+	doc := js.Global().Get(fh.Document)
+	publishPostForm := doc.Call(fh.GetElementById, "publishPostForm")
+	postTitleField := doc.Call(fh.GetElementById, "postTitleField")
+	postMarkdownField := doc.Call(fh.GetElementById, "postMarkdownField")
 	if !(publishPostForm.Truthy() && postTitleField.Truthy() && postMarkdownField.Truthy()) {
 		return nil
 	}
 
-	if postTitleField.Get(value).String() == "" {
-		alertKey("errorEmptyPostTitleMessage")
+	if postTitleField.Get(fh.Value).String() == "" {
+		fh.AlertKey("errorEmptyPostTitleMessage")
 		return nil
 	}
 
-	if postMarkdownField.Get(value).String() == "" {
-		alertKey("errorEmptyPostContentMessage")
+	if postMarkdownField.Get(fh.Value).String() == "" {
+		fh.AlertKey("errorEmptyPostContentMessage")
 		return nil
 	}
 
-	target := publishPostForm.Get(action).String()
-	publishPostForm.Set(action, convertBlogPreviewUrlToPublish(target))
-	publishPostForm.Call(submit)
+	target := publishPostForm.Get(fh.Action).String()
+	publishPostForm.Set(fh.Action, convertBlogPreviewUrlToPublish(target))
+	publishPostForm.Call(fh.Submit)
 	return nil
 }
 
@@ -182,7 +106,7 @@ func convertBlogPreviewUrlToPublish(url string) string {
 }
 
 func displayPublishErrorAction(this js.Value, args []js.Value) any {
-	alertKey("errorModifiedMarkdownMessage")
+	fh.AlertKey("errorModifiedMarkdownMessage")
 	return nil
 }
 
@@ -195,7 +119,7 @@ func buildWikiLink(this js.Value, args []js.Value) any {
 	langArg := args[1]
 	title := args[2].String() // always set
 
-	wiki, lang := extractWikiDataFromUrl(js.Global().Get(location).Get(href).String())
+	wiki, lang := extractWikiDataFromUrl(js.Global().Get(fh.Location).Get(fh.Href).String())
 
 	if wikiArg.Truthy() {
 		wiki = wikiArg.String()
@@ -235,43 +159,26 @@ func extractWikiDataFromUrl(url string) (string, string) {
 	return url[:start], url[start:end]
 }
 
-func displayPasswordHelpAction(this js.Value, args []js.Value) any {
-	alertKey("passwordHelpMessage")
-	return nil
-}
-
 func main() {
-	registerValidation()
+	fh.RegisterValidationRules()
+	fh.RegisterDisplayMessageAction()
 
 	global := js.Global()
-	doc := global.Get(document)
+	doc := global.Get(fh.Document)
 
-	loginRegisterButton := doc.Call(getElementById, "loginRegisterButton")
-	if loginRegisterButton.Truthy() {
-		loginRegisterButton.Set(onclick, js.FuncOf(loginRegisterAction))
-	}
+	fh.TruthyOnclick(doc.Call(fh.GetElementById, "loginRegisterButton"), loginRegisterAction)
+	fh.TruthyOnclick(doc.Call(fh.GetElementById, "loginRegisterButton2"), loginRegisterAction2)
 
-	loginRegisterButton2 := doc.Call(getElementById, "loginRegisterButton2")
-	if loginRegisterButton2.Truthy() {
-		loginRegisterButton2.Set(onclick, js.FuncOf(loginRegisterAction2))
-	}
-
-	postTitleField := doc.Call(getElementById, "postTitleField")
-	postMarkdownField := doc.Call(getElementById, "postMarkdownField")
-	publishPostButton := doc.Call(getElementById, "publishPostButton")
+	postTitleField := doc.Call(fh.GetElementById, "postTitleField")
+	postMarkdownField := doc.Call(fh.GetElementById, "postMarkdownField")
+	publishPostButton := doc.Call(fh.GetElementById, "publishPostButton")
 	if postTitleField.Truthy() && postMarkdownField.Truthy() && publishPostButton.Truthy() {
-		postTitleField.Set(onchange, js.FuncOf(disablePublishPost))
-		postMarkdownField.Set(onchange, js.FuncOf(disablePublishPost))
-		publishPostButton.Set(onclick, js.FuncOf(publishPostAction))
+		postTitleField.Set(fh.Onchange, js.FuncOf(disablePublishPost))
+		postMarkdownField.Set(fh.Onchange, js.FuncOf(disablePublishPost))
+		publishPostButton.Set(fh.Onclick, js.FuncOf(publishPostAction))
 	}
 
 	global.Set("buildWikiLink", js.FuncOf(buildWikiLink))
 
-	passwordHelp := doc.Call(getElementById, "passwordHelp")
-	if passwordHelp.Truthy() {
-		passwordHelp.Set(onclick, js.FuncOf(displayPasswordHelpAction))
-	}
-
-	// keep the program active to allow function call from HTML/JavaScript
-	<-make(chan struct{})
+	fh.KeepRunning()
 }
